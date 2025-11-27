@@ -93,7 +93,13 @@
     </div>
 
     <script>
-        // --- 1. 題庫資料 (來自你提供的 constants.ts) ---
+        // ==========================================
+        // 設定區：Google Apps Script 網址
+        // ==========================================
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx9bzLseYK3xu6ECDomN-TBgmZps_zwcFkcFyXp8wnTA1axxDGjNZnkzqem2YOx6jJ-sw/exec"; 
+        // ==========================================
+
+        // --- 1. 題庫資料 ---
         const QUESTIONS = [
             {
                 id: 1, text: "當團隊遇到一個突發的緊急問題時，你通常的第一反應是？",
@@ -214,7 +220,7 @@
             setTimeout(calculateResult, 1500); // 假裝在跑 AI 分析
         }
 
-        // --- 3. 分析結果邏輯 (模擬 AI) ---
+        // --- 3. 分析結果邏輯 (包含傳送資料到 Google Sheets) ---
         const RESULTS = {
             'D': { title: "Dominance 老虎型", desc: "喜歡掌控局勢，注重效率與結果。在團隊中通常擔任領導者，能夠快速決策，但有時可能顯得較為強勢。", insight: "此候選人展現出強烈的目標導向。適合擔任專案負責人或需要快速解決問題的職位。建議面試時詢問其過去「如何處理失敗」的經驗，以評估其受挫後的恢復力。" },
             'I': { title: "Influence 孔雀型", desc: "樂觀熱情，擅長溝通與社交。是團隊中的氣氛製造者，富有創意，但有時可能較缺乏對細節的專注。", insight: "此候選人具有極佳的親和力與溝通技巧。適合業務、公關或需要頻繁跨部門溝通的角色。管理上建議多給予公開讚賞，並協助其建立工作細節的檢核機制。" },
@@ -240,7 +246,32 @@
             document.getElementById('result-desc').innerText = r.desc;
             document.getElementById('ai-insight').innerText = r.insight;
 
+            // ★★★ 關鍵：在這裡將資料發送到 Google Sheets ★★★
+            sendToGoogleSheets(maxType);
+
             showPage('page-result');
+        }
+
+        function sendToGoogleSheets(resultType) {
+            // 建立要傳送的資料
+            const formData = new FormData();
+            formData.append('name', candidateName);
+            formData.append('type', resultType);
+            formData.append('score_d', scores['D']);
+            formData.append('score_i', scores['I']);
+            formData.append('score_s', scores['S']);
+            formData.append('score_c', scores['C']);
+
+            // 發送請求
+            fetch(GOOGLE_SCRIPT_URL, {
+                method: 'POST',
+                body: formData,
+                mode: 'no-cors' // 重要：避開瀏覽器的跨域檢查
+            }).then(() => {
+                console.log("資料已成功傳送至後台");
+            }).catch(error => {
+                console.error("傳送失敗:", error);
+            });
         }
     </script>
 </body>
