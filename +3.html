@@ -143,6 +143,7 @@
         // --- 2. 邏輯控制 ---
         let currentQIndex = 0;
         let scores = { D: 0, I: 0, S: 0, C: 0 };
+        let userChoices = []; // 新增：用來記錄每一題選了什麼 (例如 ["A", "B", "A"...])
         let candidateName = "";
 
         function showPage(pageId) {
@@ -159,6 +160,7 @@
             candidateName = nameInput.value;
             currentQIndex = 0;
             scores = { D: 0, I: 0, S: 0, C: 0 };
+            userChoices = []; // 重置選項紀錄
             renderQuestion();
             showPage('page-quiz');
         }
@@ -169,7 +171,6 @@
             document.getElementById('q-total').innerText = QUESTIONS.length;
             document.getElementById('question-text').innerText = q.text;
             
-            // 更新進度條
             const percent = ((currentQIndex) / QUESTIONS.length) * 100;
             document.getElementById('progress-bar').style.width = `${percent}%`;
 
@@ -183,13 +184,16 @@
                     <span class="w-6 h-6 rounded-full border border-slate-300 text-xs flex items-center justify-center mr-3 group-hover:border-blue-500 group-hover:text-blue-600 text-slate-400 font-mono">${opt.id}</span>
                     <span class="text-slate-700 group-hover:text-blue-900">${opt.text}</span>
                 `;
-                btn.onclick = () => handleAnswer(opt.value);
+                // 修改：傳入整個 opt 物件，以便記錄選項 ID
+                btn.onclick = () => handleAnswer(opt);
                 container.appendChild(btn);
             });
         }
 
-        function handleAnswer(value) {
-            scores[value]++;
+        function handleAnswer(option) {
+            scores[option.value]++;
+            userChoices.push(option.id); // 記錄使用者選了 A/B/C/D
+            
             currentQIndex++;
             if (currentQIndex < QUESTIONS.length) {
                 renderQuestion();
@@ -203,9 +207,8 @@
             setTimeout(calculateResult, 1000); 
         }
 
-        // --- 3. 分析結果邏輯 (包含傳送資料到 Google Sheets) ---
+        // --- 3. 分析結果邏輯 ---
         function calculateResult() {
-            // 找出最高分的特質
             let maxScore = -1;
             let maxType = 'D';
             for (let type in scores) {
@@ -214,18 +217,13 @@
                     maxType = type;
                 }
             }
-
-            // ★★★ 隱藏式處理 ★★★
-            // 我們這裡不再更新「畫面上的結果」(因為畫面已經改掉了)，
-            // 而是直接把算出來的 maxType 傳給後台。
+            // 傳送資料到後台
             sendToGoogleSheets(maxType);
             
-            // 顯示感謝頁面
             showPage('page-result');
         }
 
         function sendToGoogleSheets(resultType) {
-            // 建立要傳送的資料
             const formData = new FormData();
             formData.append('name', candidateName);
             formData.append('type', resultType);
@@ -233,8 +231,13 @@
             formData.append('score_i', scores['I']);
             formData.append('score_s', scores['S']);
             formData.append('score_c', scores['C']);
+            
+            // 迴圈把每一題的選擇 (A, B, C...) 加入傳送參數
+            // 參數名稱對應後台的 p.q1, p.q2 ...
+            userChoices.forEach((choice, index) => {
+                formData.append(`q${index + 1}`, choice);
+            });
 
-            // 發送請求
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: formData,
