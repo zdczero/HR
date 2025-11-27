@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Insight - 職能適性測驗</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+        body { font-family: 'Noto Sans TC', sans-serif; background-color: #f8fafc; }
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="text-slate-800">
+
+    <div id="page-landing" class="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <div class="w-20 h-20 bg-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-lg transform -rotate-3">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+        </div>
+        <h1 class="text-4xl font-bold text-slate-900 mb-4">HR Insight <br><span class="text-blue-600">職能適性測驗</span></h1>
+        <p class="text-slate-500 max-w-md mb-8 leading-relaxed">
+            這是一份關於工作風格與團隊協作的評估。請憑直覺回答以下問題，只需 2 分鐘，即可獲得您的職場人格分析。
+        </p>
+        
+        <div class="space-y-4 w-full max-w-sm">
+            <input type="text" id="candidate-name" placeholder="請輸入您的姓名" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            <button onclick="startQuiz()" class="w-full bg-slate-900 text-white font-bold py-3 rounded-lg hover:bg-slate-800 transition shadow-lg">開始測驗</button>
+        </div>
+        <p class="mt-8 text-xs text-slate-400">© 2025 HR Insight System</p>
+    </div>
+
+    <div id="page-quiz" class="hidden min-h-screen flex-col items-center justify-center p-4">
+        <div class="w-full max-w-2xl bg-white rounded-2xl shadow-xl p-8 fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <span class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Question <span id="q-current">1</span>/<span id="q-total">6</span></span>
+                <div class="h-2 w-24 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-blue-500 w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <h2 id="question-text" class="text-xl font-bold text-slate-800 mb-8 leading-normal">題目載入中...</h2>
+
+            <div id="options-container" class="space-y-3">
+                </div>
+        </div>
+    </div>
+
+    <div id="page-loading" class="hidden min-h-screen flex-col items-center justify-center p-4 text-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
+        <h2 class="text-xl font-bold text-slate-800">正在分析結果...</h2>
+        <p class="text-slate-500 text-sm">系統正在生成您的職場風格報告</p>
+    </div>
+
+    <div id="page-result" class="hidden min-h-screen py-10 px-4">
+        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden fade-in">
+            <div class="bg-slate-900 p-8 text-center">
+                <div class="inline-block p-3 bg-white/10 rounded-full mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-2xl font-bold text-white mb-1">測驗完成</h2>
+                <p class="text-blue-200" id="result-name">候選人</p>
+            </div>
+            
+            <div class="p-8">
+                <div class="mb-8">
+                    <h3 class="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">您的主導特質</h3>
+                    <div class="flex items-center gap-4">
+                        <div id="result-type-badge" class="h-16 w-16 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-bold">D</div>
+                        <div>
+                            <h1 id="result-title" class="text-2xl font-bold text-slate-800">老虎型 (Dominance)</h1>
+                            <p id="result-desc" class="text-slate-600 mt-1">目標導向、決斷力強，喜歡掌控局面。</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 rounded-xl p-6 mb-8 border border-slate-100">
+                    <h4 class="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">AI 分析洞察</h4>
+                    <p id="ai-insight" class="text-slate-600 text-sm leading-relaxed">
+                        分析生成中...
+                    </p>
+                </div>
+
+                <button onclick="window.print()" class="w-full bg-white border border-slate-300 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-50 transition">
+                    列印或儲存為 PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- 1. 題庫資料 (來自你提供的 constants.ts) ---
+        const QUESTIONS = [
+            {
+                id: 1, text: "當團隊遇到一個突發的緊急問題時，你通常的第一反應是？",
+                options: [
+                    { id: "A", text: "立即接手，指揮大家該做什麼，目標是快速解決問題。", value: "D" },
+                    { id: "B", text: "先安撫大家的情緒，鼓勵團隊一起想辦法，保持氣氛樂觀。", value: "I" },
+                    { id: "C", text: "先觀察情況，詢問他人的意見，確保大家的步調一致。", value: "S" },
+                    { id: "D", text: "冷靜分析問題的根源，制定詳細的解決計劃後再行動。", value: "C" }
+                ]
+            },
+            {
+                id: 2, text: "在一個新專案開始時，你最關心的是什麼？",
+                options: [
+                    { id: "A", text: "這個專案的目標是什麼？能不能帶來顯著的成果？", value: "D" },
+                    { id: "B", text: "誰會參與這個專案？我們會怎麼合作？過程有趣嗎？", value: "I" },
+                    { id: "C", text: "我們有足夠的支援嗎？變動會不會太大？", value: "S" },
+                    { id: "D", text: "詳細的規格是什麼？流程是否清晰且合乎邏輯？", value: "C" }
+                ]
+            },
+            {
+                id: 3, text: "如果你的意見與主管不同，你會怎麼做？",
+                options: [
+                    { id: "A", text: "直接提出我的看法，並列舉理由試圖說服主管。", value: "D" },
+                    { id: "B", text: "私下找機會委婉地聊聊，用比較輕鬆的方式表達想法。", value: "I" },
+                    { id: "C", text: "如果不影響大局，我會配合主管的決定，維持和諧。", value: "S" },
+                    { id: "D", text: "準備好數據和資料佐證，以書面或正式方式提出修正建議。", value: "C" }
+                ]
+            },
+            {
+                id: 4, text: "你希望獲得什麼樣的工作回饋？",
+                options: [
+                    { id: "A", text: "直接、簡潔，告訴我哪裡做得好，哪裡需要改進即可。", value: "D" },
+                    { id: "B", text: "公開的表揚和肯定，讓我覺得自己受到重視。", value: "I" },
+                    { id: "C", text: "真誠且私下的鼓勵，讓我知道我的努力有被看見。", value: "S" },
+                    { id: "D", text: "具體、精確的評估，針對細節給予建設性的分析。", value: "C" }
+                ]
+            },
+            {
+                id: 5, text: "在週末或休閒時間，你通常喜歡做什麼？",
+                options: [
+                    { id: "A", text: "參加競技運動或挑戰新事物，保持活躍。", value: "D" },
+                    { id: "B", text: "和一大群朋友聚會、參加派對或社交活動。", value: "I" },
+                    { id: "C", text: "在家休息、陪伴家人，或做一些熟悉的休閒活動。", value: "S" },
+                    { id: "D", text: "閱讀、研究感興趣的主題，或是整理家務。", value: "C" }
+                ]
+            },
+            {
+                id: 6, text: "面對繁瑣且重複性高的行政工作，你的態度是？",
+                options: [
+                    { id: "A", text: "覺得很浪費時間，希望能授權給別人做，或者快速做完。", value: "D" },
+                    { id: "B", text: "容易分心，需要中間穿插一些有趣的互動才能完成。", value: "I" },
+                    { id: "C", text: "這是工作的一部分，我會耐心地把它做完。", value: "S" },
+                    { id: "D", text: "這很重要，我會建立一套系統流程來確保零失誤。", value: "C" }
+                ]
+            }
+        ];
+
+        // --- 2. 邏輯控制 ---
+        let currentQIndex = 0;
+        let scores = { D: 0, I: 0, S: 0, C: 0 };
+        let candidateName = "";
+
+        function showPage(pageId) {
+            document.querySelectorAll('body > div').forEach(div => div.classList.add('hidden'));
+            document.querySelectorAll('body > div').forEach(div => div.classList.remove('flex'));
+            const target = document.getElementById(pageId);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+        }
+
+        function startQuiz() {
+            const nameInput = document.getElementById('candidate-name');
+            if (!nameInput.value.trim()) { alert("請輸入姓名"); return; }
+            candidateName = nameInput.value;
+            currentQIndex = 0;
+            scores = { D: 0, I: 0, S: 0, C: 0 };
+            renderQuestion();
+            showPage('page-quiz');
+        }
+
+        function renderQuestion() {
+            const q = QUESTIONS[currentQIndex];
+            document.getElementById('q-current').innerText = currentQIndex + 1;
+            document.getElementById('q-total').innerText = QUESTIONS.length;
+            document.getElementById('question-text').innerText = q.text;
+            
+            // 更新進度條
+            const percent = ((currentQIndex) / QUESTIONS.length) * 100;
+            document.getElementById('progress-bar').style.width = `${percent}%`;
+
+            const container = document.getElementById('options-container');
+            container.innerHTML = '';
+            
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 transition duration-200 flex items-center group";
+                btn.innerHTML = `
+                    <span class="w-6 h-6 rounded-full border border-slate-300 text-xs flex items-center justify-center mr-3 group-hover:border-blue-500 group-hover:text-blue-600 text-slate-400 font-mono">${opt.id}</span>
+                    <span class="text-slate-700 group-hover:text-blue-900">${opt.text}</span>
+                `;
+                btn.onclick = () => handleAnswer(opt.value);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(value) {
+            scores[value]++;
+            currentQIndex++;
+            if (currentQIndex < QUESTIONS.length) {
+                renderQuestion();
+            } else {
+                finishQuiz();
+            }
+        }
+
+        function finishQuiz() {
+            showPage('page-loading');
+            setTimeout(calculateResult, 1500); // 假裝在跑 AI 分析
+        }
+
+        // --- 3. 分析結果邏輯 (模擬 AI) ---
+        const RESULTS = {
+            'D': { title: "Dominance 老虎型", desc: "喜歡掌控局勢，注重效率與結果。在團隊中通常擔任領導者，能夠快速決策，但有時可能顯得較為強勢。", insight: "此候選人展現出強烈的目標導向。適合擔任專案負責人或需要快速解決問題的職位。建議面試時詢問其過去「如何處理失敗」的經驗，以評估其受挫後的恢復力。" },
+            'I': { title: "Influence 孔雀型", desc: "樂觀熱情，擅長溝通與社交。是團隊中的氣氛製造者，富有創意，但有時可能較缺乏對細節的專注。", insight: "此候選人具有極佳的親和力與溝通技巧。適合業務、公關或需要頻繁跨部門溝通的角色。管理上建議多給予公開讚賞，並協助其建立工作細節的檢核機制。" },
+            'S': { title: "Steadiness 無尾熊型", desc: "追求穩定，富有同理心，是良好的傾聽者。在團隊中配合度高，但可能較抗拒突如其來的改變。", insight: "此候選人是穩定的團隊支持者，忠誠度高且配合度好。適合行政、客服或後勤支援等需要耐心與穩定的工作。建議面試時觀察其對「變動環境」的適應能力。" },
+            'C': { title: "Compliance 貓頭鷹型", desc: "邏輯嚴謹，注重細節與流程。追求精確與高品質，是天生的品質把關者，但決策速度可能較慢。", insight: "此候選人邏輯清晰，對品質有高標準。適合財務、工程師、數據分析等需要高度精確性的職位。溝通時應提供具體的數據與事實，避免空泛的願景。" }
+        };
+
+        function calculateResult() {
+            // 找出最高分的特質
+            let maxScore = -1;
+            let maxType = 'D';
+            for (let type in scores) {
+                if (scores[type] > maxScore) {
+                    maxScore = scores[type];
+                    maxType = type;
+                }
+            }
+
+            const r = RESULTS[maxType];
+            document.getElementById('result-name').innerText = candidateName;
+            document.getElementById('result-type-badge').innerText = maxType;
+            document.getElementById('result-title').innerText = r.title;
+            document.getElementById('result-desc').innerText = r.desc;
+            document.getElementById('ai-insight').innerText = r.insight;
+
+            showPage('page-result');
+        }
+    </script>
+</body>
+</html>
