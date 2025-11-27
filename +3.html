@@ -22,7 +22,7 @@
         </div>
         <h1 class="text-4xl font-bold text-slate-900 mb-4">HR Insight <br><span class="text-blue-600">職能適性測驗</span></h1>
         <p class="text-slate-500 max-w-md mb-8 leading-relaxed">
-            這是一份關於工作風格與團隊協作的評估。請憑直覺回答以下問題，只需 2 分鐘，即可獲得您的職場人格分析。
+            這是一份關於工作風格與團隊協作的評估。請憑直覺回答以下問題，只需 2 分鐘，即可完成。
         </p>
         
         <div class="space-y-4 w-full max-w-sm">
@@ -50,46 +50,29 @@
 
     <div id="page-loading" class="hidden min-h-screen flex-col items-center justify-center p-4 text-center">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-        <h2 class="text-xl font-bold text-slate-800">正在分析結果...</h2>
-        <p class="text-slate-500 text-sm">系統正在生成您的職場風格報告</p>
+        <h2 class="text-xl font-bold text-slate-800">正在傳送資料...</h2>
+        <p class="text-slate-500 text-sm">請稍候，請勿關閉視窗</p>
     </div>
 
-    <div id="page-result" class="hidden min-h-screen py-10 px-4">
-        <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden fade-in">
-            <div class="bg-slate-900 p-8 text-center">
-                <div class="inline-block p-3 bg-white/10 rounded-full mb-4">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-1">測驗完成</h2>
-                <p class="text-blue-200" id="result-name">候選人</p>
-            </div>
-            
-            <div class="p-8">
-                <div class="mb-8">
-                    <h3 class="text-sm uppercase tracking-wider text-slate-500 font-bold mb-3">您的主導特質</h3>
-                    <div class="flex items-center gap-4">
-                        <div id="result-type-badge" class="h-16 w-16 bg-blue-100 text-blue-600 rounded-xl flex items-center justify-center text-2xl font-bold">D</div>
-                        <div>
-                            <h1 id="result-title" class="text-2xl font-bold text-slate-800">老虎型 (Dominance)</h1>
-                            <p id="result-desc" class="text-slate-600 mt-1">目標導向、決斷力強，喜歡掌控局面。</p>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-slate-50 rounded-xl p-6 mb-8 border border-slate-100">
-                    <h4 class="font-bold text-slate-800 mb-3 border-b border-slate-200 pb-2">AI 分析洞察</h4>
-                    <p id="ai-insight" class="text-slate-600 text-sm leading-relaxed">
-                        分析生成中...
-                    </p>
-                </div>
-
-                <button onclick="window.print()" class="w-full bg-white border border-slate-300 text-slate-700 font-bold py-3 rounded-lg hover:bg-slate-50 transition">
-                    列印或儲存為 PDF
-                </button>
-            </div>
+    <div id="page-result" class="hidden min-h-screen flex flex-col items-center justify-center p-4 text-center">
+        <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 shadow-green-200 shadow-lg fade-in">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
         </div>
+        <h2 class="text-3xl font-bold text-slate-900 mb-4 fade-in">測驗已完成</h2>
+        <div class="bg-white p-8 rounded-xl border border-slate-100 shadow-lg max-w-md w-full mb-8 text-left fade-in">
+            <p class="text-slate-600 leading-relaxed mb-4">
+                感謝您完成本次職能適性測驗。您的回答資料已成功上傳至系統資料庫。
+            </p>
+            <p class="text-slate-500 text-sm border-t border-slate-100 pt-4">
+                HR 團隊將會儘速審閱您的評估結果，若有進一步消息將會主動聯繫您。現在您可以安心關閉此視窗。
+            </p>
+        </div>
+        
+        <button onclick="location.reload()" class="fade-in px-8 py-3 bg-white border border-slate-300 rounded-xl font-semibold text-slate-600 hover:bg-slate-50 transition shadow-sm">
+            返回首頁
+        </button>
     </div>
 
     <script>
@@ -217,17 +200,10 @@
 
         function finishQuiz() {
             showPage('page-loading');
-            setTimeout(calculateResult, 1500); // 假裝在跑 AI 分析
+            setTimeout(calculateResult, 1000); 
         }
 
         // --- 3. 分析結果邏輯 (包含傳送資料到 Google Sheets) ---
-        const RESULTS = {
-            'D': { title: "Dominance 老虎型", desc: "喜歡掌控局勢，注重效率與結果。在團隊中通常擔任領導者，能夠快速決策，但有時可能顯得較為強勢。", insight: "此候選人展現出強烈的目標導向。適合擔任專案負責人或需要快速解決問題的職位。建議面試時詢問其過去「如何處理失敗」的經驗，以評估其受挫後的恢復力。" },
-            'I': { title: "Influence 孔雀型", desc: "樂觀熱情，擅長溝通與社交。是團隊中的氣氛製造者，富有創意，但有時可能較缺乏對細節的專注。", insight: "此候選人具有極佳的親和力與溝通技巧。適合業務、公關或需要頻繁跨部門溝通的角色。管理上建議多給予公開讚賞，並協助其建立工作細節的檢核機制。" },
-            'S': { title: "Steadiness 無尾熊型", desc: "追求穩定，富有同理心，是良好的傾聽者。在團隊中配合度高，但可能較抗拒突如其來的改變。", insight: "此候選人是穩定的團隊支持者，忠誠度高且配合度好。適合行政、客服或後勤支援等需要耐心與穩定的工作。建議面試時觀察其對「變動環境」的適應能力。" },
-            'C': { title: "Compliance 貓頭鷹型", desc: "邏輯嚴謹，注重細節與流程。追求精確與高品質，是天生的品質把關者，但決策速度可能較慢。", insight: "此候選人邏輯清晰，對品質有高標準。適合財務、工程師、數據分析等需要高度精確性的職位。溝通時應提供具體的數據與事實，避免空泛的願景。" }
-        };
-
         function calculateResult() {
             // 找出最高分的特質
             let maxScore = -1;
@@ -239,16 +215,12 @@
                 }
             }
 
-            const r = RESULTS[maxType];
-            document.getElementById('result-name').innerText = candidateName;
-            document.getElementById('result-type-badge').innerText = maxType;
-            document.getElementById('result-title').innerText = r.title;
-            document.getElementById('result-desc').innerText = r.desc;
-            document.getElementById('ai-insight').innerText = r.insight;
-
-            // ★★★ 關鍵：在這裡將資料發送到 Google Sheets ★★★
+            // ★★★ 隱藏式處理 ★★★
+            // 我們這裡不再更新「畫面上的結果」(因為畫面已經改掉了)，
+            // 而是直接把算出來的 maxType 傳給後台。
             sendToGoogleSheets(maxType);
-
+            
+            // 顯示感謝頁面
             showPage('page-result');
         }
 
@@ -266,7 +238,7 @@
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
                 body: formData,
-                mode: 'no-cors' // 重要：避開瀏覽器的跨域檢查
+                mode: 'no-cors' 
             }).then(() => {
                 console.log("資料已成功傳送至後台");
             }).catch(error => {
